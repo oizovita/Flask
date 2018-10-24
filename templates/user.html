@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{%  block title %}
+Home
+{% endblock %}
+
+{%  block content_title %}
+Home
+{% endblock %}
+
+{%  block user %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{name}}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">Templates</a>
+                <a class="dropdown-item" href="#">Edit</a>
+                <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
+            </div>
+        </div>
+    </li>
+</ul>
+{%endblock %}
+
+{%  block content %}
+<h1>Hi, {{ current_user.login }}!</h1>
+{% endblock %}
