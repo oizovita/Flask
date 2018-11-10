@@ -129,10 +129,11 @@ def user(login):
         save = form.save_tmp.data
         if load_file(data, template, user, save):
             create_templates(template, user)
+            create_zip(user)
         else:
             return render_template('user.html', form=form, user=user, message="Invalid file type")
 
-        create_zip(user)
+
 
     return render_template('user.html', form=form, user=user)
 
