@@ -5,6 +5,7 @@ from config import Configuration
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
+
 app = Flask(__name__)
 app.config.from_object(Configuration)
 
@@ -14,4 +15,6 @@ login = LoginManager(app)
 login.init_app(app)
 login.login_view = 'login'
 
-oid = OpenID(app, os.path.join(Configuration.basedir, 'tmp'))
+oid = OpenID(app, os.path.join(Configuration.BASEDIR, 'tmp'))
+
+
