@@ -23,7 +23,7 @@ class Template(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     data = db.Column(db.String(20))
     template = db.Column(db.String(20))
-
+    zip = db.Column(db.String(30))
 
 
 db.drop_all()

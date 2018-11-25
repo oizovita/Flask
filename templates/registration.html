@@ -3,7 +3,14 @@
 {%  block title %}
 Login
 {% endblock %}
+{%  block user %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a href="{{url_for('login')}}" class="nav-link">Sing in</a>
+    </li>
 
+</ul>
+{%endblock %}
 
 {%  block content %}
 

@@ -3,7 +3,13 @@
 {%  block title %}
 Login
 {% endblock %}
-
+{%  block user %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a href="{{url_for('registration')}}" class="nav-link">Sing up</a>
+    </li>
+</ul>
+{%endblock %}
 
 {%  block content %}
 
@@ -12,7 +18,7 @@ Login
     {{ form.hidden_tag() }}
     <img class="mb-4" src="../static/icons.png" alt="" width="72" height="72">
     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <p >
+    <p>
         {{ form.login.label }}<br>
         {{ form.login(size=32) }}
     </p>
@@ -22,7 +28,7 @@ Login
     </p>
     <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
     <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-    <p style="color:red">{{message}}</p>
+    <span style="color: red;">{{ error }}</span>
 
 </form>
 {% endblock %}
