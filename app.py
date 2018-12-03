@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 from flask import Flask
 from flask_openid import OpenID
 from config import Configuration
@@ -17,4 +18,7 @@ login.login_view = 'login'
 
 oid = OpenID(app, os.path.join(Configuration.BASEDIR, 'tmp'))
 
-
+# Ensure virtualenv path is part of PATH env var
+os.environ['PATH'] += os.pathsep + os.path.dirname(sys.executable)
+WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')],
+                                          stdout=subprocess.PIPE).communicate()[0].strip()

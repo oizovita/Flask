@@ -1,7 +1,7 @@
 import os
 import subprocess
 import sys
-import os
+
 
 
 class Configuration(object):
@@ -19,7 +19,7 @@ class Configuration(object):
     # folder for storing templates
     UPLOAD_TEMPLATE = BASEDIR + '/file/template/'
 
-    # Ensure virtualenv path is part of PATH env var
-    os.environ['PATH'] += os.pathsep + os.path.dirname(sys.executable)
-    WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')],
-                                          stdout=subprocess.PIPE).communicate()[0].strip()
+    # # Ensure virtualenv path is part of PATH env var
+    # os.environ['PATH'] += os.pathsep + os.path.dirname(sys.executable)
+    # WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')],
+    #                                       stdout=subprocess.PIPE).communicate()[0].strip()
