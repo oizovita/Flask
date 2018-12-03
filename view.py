@@ -78,10 +78,6 @@ def allowed_file_template(filename):
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS_TEMPLATE
 
 
-# variable to store current archive name
-name_zip = ''
-
-
 # checks patterns and data and if everything puts them well into the database.
 # runs file and archive creation.
 def data_and_template_handler(data, template, user):
@@ -159,9 +155,7 @@ def create_zip(user, name_zip):
 @login_required
 def user(login):
     user = Users.query.filter_by(login=login).first()
-
     form = TemplateForm()
-
     if user == None:
         flash('User ' + login + ' not found.')
         return redirect(url_for('index'))
@@ -171,13 +165,13 @@ def user(login):
         template = form.template.data
 
         if data_and_template_handler(data, template, user):
-            return render_template('user.html', form=form, user=user, message='save')
+            return render_template('user.html', form=form, user=user, message=name_zip)
         else:
             return render_template('user.html', form=form, user=user, error="Invalid file type")
 
     return render_template('user.html', form=form, user=user)
 
 
-@app.route('/uploads')
-def uploads():
-    return send_file(app.config['BASEDIR'] + '/' + name_zip, as_attachment=True, cache_timeout=-1)
+@app.route('/uploads/<filename>')
+def uploads(filename):
+    return send_file(app.config['BASEDIR'] + '/' + filename, as_attachment=True, cache_timeout=-1)

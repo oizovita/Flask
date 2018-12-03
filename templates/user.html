@@ -77,7 +77,7 @@
             <p>{{ form.save_tmp() }} {{ form.save_tmp.label }}</p>
             <button onclick="myfunction()" class="btn btn-lg btn-primary btn-block" type="submit">Go</button>
             <p style="color:red">{{error}}</p>
-            <a href="{{url_for('uploads')}}" download>{{message}}</a>
+            <a href="{{url_for('uploads',filename=message)}}" download>{{message}}</a>
         </form>
 
     </div>

@@ -1,10 +1,10 @@
 import os
+import sys
 from flask import Flask
 from flask_openid import OpenID
 from config import Configuration
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
-
 
 app = Flask(__name__)
 app.config.from_object(Configuration)
