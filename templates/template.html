@@ -41,9 +41,19 @@
         </ul>
 
         <form class="form-inline my-2 my-lg-0">
-            {% block user %}
+            <form class="form-inline my-lg-0">
+                <div class=" btn-group dropleft">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{login}}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="">Templates</a>
+                        <a class="dropdown-item" href="#">Edit</a>
+                        <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
+                    </div>
+                </div>
 
-            {%endblock %}
+            </form>
 
         </form>
     </div>
@@ -51,19 +61,18 @@
 </nav>
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="col">
-
-        </div>
-        <div class="col-md-auto">
-            {% block content %}
-
-            {% endblock %}
-        </div>
-        <div class="col">
-
-        </div>
+    <div class="col-md-auto">
+        <ul class="list-group">
+            {% for template in templates %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{template.template}}
+                <a href="{{url_for('uploads_template',filename=template.template, login=login)}}" class="badge badge-primary badge-pill">download</a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
+
+
 </div>
 
 

@@ -83,13 +83,13 @@ def allowed_file_template(filename):
 def data_and_template_handler(data, template, user):
     if check_file(data, 'data', user, 'UPLOAD_DATA', ) and check_file(template, 'template', user, 'UPLOAD_TEMPLATE'):
         global name_zip
-        name_zip = str(user.id) + '_' + str(time.ctime()).replace(" ", "_") + '.zip'
+        name_zip = str(time.ctime()).replace(" ", "_") + '.zip'
         tmp = Template(user_id=user.id, data=data.filename, template=template.filename, zip=name_zip)
         db.session.add(tmp)
         db.session.commit()
 
         creating_files_by_template(user, template, data)
-        create_zip(user, name_zip)
+        create_zip(user, name_zip, 'UPLOAD_ZIP')
 
         return True
 
@@ -137,7 +137,8 @@ def creating_files_by_template(user, template, data):
 
 
 # creates archive for download
-def create_zip(user, name_zip):
+def create_zip(user, name_zip, dir):
+    create_folder(app.config[dir] + str(user.id))
     if os.path.isfile(name_zip):
         os.remove(name_zip)
 
@@ -149,9 +150,10 @@ def create_zip(user, name_zip):
     z.close()
 
     shutil.rmtree('tmp_' + str(user.id))
+    shutil.move(name_zip, app.config[dir] + str(user.id))
 
 
-@app.route('/user/<login>', methods=['POST', 'GET'])
+@app.route('/user/<login>/', methods=['POST', 'GET'])
 @login_required
 def user(login):
     user = Users.query.filter_by(login=login).first()
@@ -172,6 +174,21 @@ def user(login):
     return render_template('user.html', form=form, user=user)
 
 
-@app.route('/uploads/<filename>')
-def uploads(filename):
-    return send_file(app.config['BASEDIR'] + '/' + filename, as_attachment=True, cache_timeout=-1)
+@app.route('/uploads/<filename>/<login>')
+def uploads(filename, login):
+    user = Users.query.filter_by(login=login).first()
+    return send_file(app.config['UPLOAD_ZIP'] + str(user.id) + '/' + filename, as_attachment=True, cache_timeout=-1)
+
+
+@app.route('/template/<login>')
+def template(login):
+    user = Users.query.filter_by(login=login).first()
+    templ = Template.query.filter_by(user_id=user.id).all()
+
+    return render_template('template.html', login=login, templates=templ)
+
+
+@app.route('/uploads_template/<filename>/<login>')
+def uploads_template(filename, login):
+    user = Users.query.filter_by(login=login).first()
+    return send_file(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + filename, as_attachment=True, cache_timeout=-1)
