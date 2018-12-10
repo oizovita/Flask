@@ -13,24 +13,35 @@ Login
 
 {%  block content %}
 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
 
-<form class="form-signin text-center" action="{{url_for('login')}}" method="POST" novalidate>
-    {{ form.hidden_tag() }}
-    <img class="mb-4" src="../static/icons.png" alt="" width="72" height="72">
-    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <p>
-        {{ form.login.label }}<br>
-        {{ form.login(size=32) }}
-    </p>
-    <p>
-        {{ form.password.label }}<br>
-        {{ form.password(size=32) }}
-    </p>
-    <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-    <span style="color: red;">{{ error }}</span>
+        </div>
+        <div class="col-md-auto">
+            <form class="form-signin text-center" action="{{url_for('login')}}" method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                <img class="mb-4" src="../static/icons.png" alt="" width="72" height="72">
+                <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+                <p>
+                    {{ form.login.label }}<br>
+                    {{ form.login(size=32) }}
+                </p>
+                <p>
+                    {{ form.password.label }}<br>
+                    {{ form.password(size=32) }}
+                </p>
+                <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+                <span style="color: red;">{{ error }}</span>
 
-</form>
+            </form>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 

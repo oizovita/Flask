@@ -6,13 +6,13 @@ Login
 {%  block user %}
 
 
-</div>
 <form class="form-inline my-lg-0">
     <div class=" btn-group dropleft">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{user.login}}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="{{url_for('user', login=user.login)}}">Profile</a>
             <a class="dropdown-item" href="{{url_for('template', login=user.login)}}">Templates</a>
             <a class="dropdown-item" href="#">Edit</a>
             <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
@@ -28,27 +28,38 @@ Login
 
 {%  block content %}
 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
 
-<form class="form-signin text-center" action="{{url_for('user', login=current_user.login)}}" method="POST"
-      novalidate enctype=multipart/form-data>
-    {{ form.hidden_tag() }}
+        </div>
+        <div class="col-md-auto">
+            <form class="form-signin text-center" action="{{url_for('user', login=current_user.login)}}" method="POST"
+                  novalidate enctype=multipart/form-data>
+                {{ form.hidden_tag() }}
 
-    <h1 class="h3 mb-3 font-weight-normal">Load file</h1>
-    <p>
-        {{ form.data.label }}<br>
-        {{ form.data(size=14) }}
-    </p>
-    <p>
-        {{ form.template.label }}<br>
-        {{ form.template() }}
-    </p>
-    <p>{{ form.save_tmp() }} {{ form.save_tmp.label }}</p>
-    <div>
-        <button onclick="myfunction()" class="btn btn-lg btn-primary btn-block " type="submit">Go</button>
+                <h1 class="h3 mb-3 font-weight-normal">Load file</h1>
+                <p>
+                    {{ form.data.label }}<br>
+                    {{ form.data(size=14) }}
+                </p>
+                <p>
+                    {{ form.template.label }}<br>
+                    {{ form.template() }}
+                </p>
+
+                <div>
+                    <button onclick="myfunction()" class="btn btn-lg btn-primary btn-block " type="submit">Go</button>
+                </div>
+                <p style="color:red">{{error}}</p>
+                <a href="{{url_for('uploads',filename=message, login=current_user.login)}}" download>{{message}}</a>
+            </form>
+
+        </div>
+        <div class="col">
+
+        </div>
     </div>
-    <p style="color:red">{{error}}</p>
-    <a href="{{url_for('uploads',filename=message, login=current_user.login)}}" download>{{message}}</a>
-</form>
-
+</div>
 
 {%endblock %}

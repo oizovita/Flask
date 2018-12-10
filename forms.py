@@ -30,4 +30,5 @@ class RegistrationForm(FlaskForm):
 class TemplateForm(FlaskForm):
     data = FileField('Data', validators=[FileRequired()])
     template = FileField('Template', validators=[FileRequired()])
-    save_tmp = BooleanField('Save Template', default=False)
+
+
