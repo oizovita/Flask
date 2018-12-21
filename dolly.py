@@ -1,4 +1,5 @@
 import os
+import subprocess
 import pdfkit
 import argparse
 import subprocess
@@ -84,7 +85,7 @@ def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
         html_file = open(TMP_HTML_TEMPLATE, 'w')
         html_file.write(outputText)
         html_file.close()
-        pdfkit.from_file('template.html', output_folder + '/Invoice{0}.pdf'.format(i))
+        pdfkit.from_file('template.html', output_folder + '/Invoice{0}.pdf'.format(i), configuration=pdfkit_config)
 
     os.remove(TMP_HTML_TEMPLATE)
 
