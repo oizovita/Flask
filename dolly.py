@@ -69,7 +69,7 @@ def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
         exit()
 
     WKHTMLTOPDF_CMD = subprocess.Popen(
-        ['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf-pack')],
+        ['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')],
         # Note we default to 'wkhtmltopdf' as the binary name
         stdout=subprocess.PIPE).communicate()[0].strip()
 
