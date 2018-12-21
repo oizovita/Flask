@@ -1,4 +1,5 @@
 import os
+import subprocess
 import pdfkit
 import argparse
 from xlrd import open_workbook
@@ -67,6 +68,13 @@ def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
         print('Invalid file format')
         exit()
 
+    WKHTMLTOPDF_CMD = subprocess.Popen(
+        ['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')],
+        # Note we default to 'wkhtmltopdf' as the binary name
+        stdout=subprocess.PIPE).communicate()[0].strip()
+
+    pdfkit_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+
     template_html_file = path_to_the_template.split("/")[-1]
     path_to_the_template = path_to_the_template[:-len(template_html_file)]
     template = Environment(loader=FileSystemLoader(searchpath=path_to_the_template)).get_template(template_html_file)
@@ -76,7 +84,7 @@ def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
         html_file = open(TMP_HTML_TEMPLATE, 'w')
         html_file.write(outputText)
         html_file.close()
-        pdfkit.from_file('template.html', output_folder + '/Invoice{0}.pdf'.format(i))
+        pdfkit.from_file('template.html', output_folder + '/Invoice{0}.pdf'.format(i), configuration=pdfkit_config)
 
     os.remove(TMP_HTML_TEMPLATE)
 
