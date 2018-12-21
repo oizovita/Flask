@@ -1,6 +1,7 @@
 import os
 import pdfkit
 import argparse
+import subprocess
 from xlrd import open_workbook
 from docxtpl import DocxTemplate
 from jinja2 import FileSystemLoader, Environment
@@ -66,6 +67,13 @@ def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
     if path_to_the_template[-4:] == FILE_DOCX:
         print('Invalid file format')
         exit()
+
+    WKHTMLTOPDF_CMD = subprocess.Popen(
+        ['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')],
+        # Note we default to 'wkhtmltopdf' as the binary name
+        stdout=subprocess.PIPE).communicate()[0].strip()
+
+    pdfkit_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
 
     template_html_file = path_to_the_template.split("/")[-1]
     path_to_the_template = path_to_the_template[:-len(template_html_file)]

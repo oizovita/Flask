@@ -81,18 +81,17 @@ def allowed_file_template(filename):
 # checks patterns and data and if everything puts them well into the database.
 # runs file and archive creation.
 def data_and_template_handler(data, template, user):
-    if check_file(data, 'data', user, 'UPLOAD_DATA', ) and check_file(template, 'template', user, 'UPLOAD_TEMPLATE'):
+    data_file_name = check_file(data, 'data', user, 'UPLOAD_DATA', )
+    template_file_name = check_file(template, 'template', user, 'UPLOAD_TEMPLATE')
+    if data_file_name and template_file_name:
         global name_zip
         name_zip = str(time.ctime()).replace(" ", "_") + '.zip'
-        try:
-            tmp = Template(user_id=user.id, data=data.filename, template=template.filename, zip=name_zip)
-            db.session.add(tmp)
-            db.session.commit()
-        except:
-            db.session.rollback()
-            return False
 
-        creating_files_by_template(user, template, data)
+        tmp = Template(user_id=user.id, template=template_file_name)
+        db.session.add(tmp)
+        db.session.commit()
+
+        creating_files_by_template(user, data_file_name, template_file_name)
         create_zip(user, name_zip, 'UPLOAD_ZIP')
 
         return True
@@ -102,12 +101,18 @@ def data_and_template_handler(data, template, user):
 def check_file(file, type, user, dir):
     if type == 'data':
         if file and allowed_file_data(file.filename):
-            load_file(file, user, dir)
-            return True
+            try:
+                filename = load_file(file, user, dir)
+                return filename
+            except Exception:
+                return False
     elif type == 'template':
         if file and allowed_file_template(file.filename):
-            load_file(file, user, dir)
-            return True
+            try:
+                filename = load_file(file, user, dir)
+                return filename
+            except Exception:
+                return False
     else:
         return False
 
@@ -116,28 +121,29 @@ def check_file(file, type, user, dir):
 def load_file(file, user, dir):
     create_folder(app.config[dir] + str(user.id))
 
-    filename = secure_filename(file.filename)
+    filename = 'file_' + str(int(time.time())) + '_' + secure_filename(file.filename)
     file.save(os.path.join(app.config[dir] + str(user.id), filename))
+    return filename
 
 
 # creates files based on the specified template in pdf or doc format
-def creating_files_by_template(user, template, data):
-    template_db = Template.query.filter_by(user_id=user.id, template=template.filename, data=data.filename).first()
-
+def creating_files_by_template(user, data_file_name, template_file_name):
     book = open_workbook(
-        app.config['UPLOAD_DATA'] + str(template_db.user_id) + '/' + str(template_db.data),
+        app.config['UPLOAD_DATA'] + str(user.id) + '/' + str(data_file_name),
         on_demand=True)
     sheet = book.sheet_by_name(book.sheet_names()[0])
-    create_folder(app.config['BASEDIR'] + '/tmp_' + str(template_db.user_id))
+    create_folder(app.config['BASEDIR'] + '/tmp_' + str(user.id))
 
-    if template_db.template[-4:] == FILE_HTML:
-        create_pdf_from_html_template(sheet, app.config['UPLOAD_TEMPLATE'] + str(template_db.user_id) + '/' +
-                                      str(template_db.template),
-                                      app.config['BASEDIR'] + '/tmp_' + str(template_db.user_id))
-    elif template_db.template[-4:] == FILE_DOCX:
-        substitution_into_a_template(sheet, app.config['UPLOAD_TEMPLATE'] + str(template_db.user_id) +
-                                     '/' + str(template_db.template),
-                                     app.config['BASEDIR'] + '/tmp_' + str(template_db.user_id))
+    if template_file_name[-4:] == FILE_HTML:
+        create_pdf_from_html_template(sheet, app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' +
+                                      str(template_file_name),
+                                      app.config['BASEDIR'] + '/tmp_' + str(user.id))
+    elif template_file_name[-4:] == FILE_DOCX:
+        substitution_into_a_template(sheet, app.config['UPLOAD_TEMPLATE'] + str(user.id) +
+                                     '/' + str(template_file_name),
+                                     app.config['BASEDIR'] + '/tmp_' + str(user.id))
+
+    shutil.rmtree(app.config['UPLOAD_DATA'])
 
 
 # creates archive for download
