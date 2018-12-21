@@ -21,9 +21,8 @@ class Users(UserMixin, db.Model):
 class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    data = db.Column(db.String(250))
     template = db.Column(db.String(250))
-    zip = db.Column(db.String(250))
+
 
 
 db.drop_all()
