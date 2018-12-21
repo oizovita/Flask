@@ -14,7 +14,7 @@ Jinja2==2.10
 lxml==4.2.5
 MarkupSafe==1.0
 mysql-connector==2.1.6
-wkhtmltopdf-pack==0.12.3.0
+wkhtmltopdf-pack
 pdfkit==0.6.1
 psycopg2==2.7.5
 psycopg2-binary==2.7.6.1
