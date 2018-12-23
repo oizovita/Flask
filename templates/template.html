@@ -66,8 +66,8 @@
         <ul class="list-group">
             {% for template in templates %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{template.template}}
-                <a href="{{url_for('uploads_template',filename=template.template, login=login)}}" class="badge badge-primary badge-pill">download</a>
+                {{template.template}} - {{template.create_date}}
+                <a href="{{url_for('uploads',filename=template.server_template,type_file='template', login=login)}}" class="badge badge-primary badge-pill">download</a>
             </li>
             {% endfor %}
         </ul>

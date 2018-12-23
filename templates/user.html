@@ -37,22 +37,33 @@ Login
             <form class="form-signin text-center" action="{{url_for('user', login=current_user.login)}}" method="POST"
                   novalidate enctype=multipart/form-data>
                 {{ form.hidden_tag() }}
-
                 <h1 class="h3 mb-3 font-weight-normal">Load file</h1>
+
                 <p>
                     {{ form.data.label }}<br>
                     {{ form.data(size=14) }}
                 </p>
                 <p>
                     {{ form.template.label }}<br>
-                    {{ form.template() }}
+                {{ form.template() }}
+                <div class="form-group">
+                    <label for="exampleFormControlSelect1">Template select</label>
+                    <select class="form-control" name="exampleFormControlSelect1">
+                        <option>Choose a template</option>
+                        {% for template in templates %}
+                        <option value={{template.server_template}}> {{template.template}} - {{template.create_date}}</option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
                 </p>
 
                 <div>
                     <button onclick="myfunction()" class="btn btn-lg btn-primary btn-block " type="submit">Go</button>
                 </div>
                 <p style="color:red">{{error}}</p>
-                <a href="{{url_for('uploads',filename=message, login=current_user.login)}}" download>{{message}}</a>
+                <a href="{{url_for('uploads',filename=message, type_file='zip', login=current_user.login)}}" download>{{message}}</a>
             </form>
 
         </div>

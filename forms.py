@@ -1,8 +1,9 @@
 from models import Users
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
+from wtforms import StringField, PasswordField, BooleanField, SelectField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 from flask_wtf.file import FileRequired, FileField
+
 
 class LoginForm(FlaskForm):
     login = StringField('Username', validators=[DataRequired()])
@@ -27,8 +28,8 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Please use a different email address.')
 
+
 class TemplateForm(FlaskForm):
     data = FileField('Data', validators=[FileRequired()])
     template = FileField('Template', validators=[FileRequired()])
-
 

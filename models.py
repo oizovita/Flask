@@ -1,5 +1,5 @@
 from app import db, login, app
-from time import time
+import datetime
 import jwt
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -30,5 +30,7 @@ class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     template = db.Column(db.String(250))
+    server_template = db.Column(db.String(250))
+    create_date = db.Column(db.DateTime)
 
 
