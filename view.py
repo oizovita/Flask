@@ -4,7 +4,7 @@ from models import Users, Template
 from werkzeug.urls import url_parse
 from forms import LoginForm, RegistrationForm, TemplateForm
 from flask_login import current_user, login_user, login_required, logout_user
-from flask import render_template, g, flash, request, redirect, url_for, send_file
+from flask import render_template, g, flash, request, redirect, url_for, send_file, after_this_request
 
 
 @app.route('/')
@@ -57,10 +57,11 @@ def registration():
 @app.route('/user/<login>/', methods=['POST', 'GET'])
 @login_required
 def user(login):
-    user = Users.query.filter_by(login=login).first()
-    all_downloaded_template = Template.query.filter_by(user_id=user.id).all()
+    logged_in_user = Users.query.filter_by(login=login).first()
+    all_downloaded_template = Template.query.filter_by(user_id=logged_in_user.id).all()
     form = TemplateForm()
-    if user == None:
+
+    if logged_in_user == None:
         flash('User ' + login + ' not found.')
         return redirect(url_for('index'))
 
@@ -77,33 +78,42 @@ def user(login):
             template = loaded_template
             using_loaded_template = True
 
-        handler_result = data_and_template_handler(data, template, user, using_loaded_template)
+        handler_result = data_and_template_handler(data, template, logged_in_user, using_loaded_template)
 
         if handler_result[0]:
-            return render_template('user.html', form=form, user=user, message=handler_result[1], templates=all_downloaded_template)
+            return render_template('user.html', form=form, user=logged_in_user, message=handler_result[1],
+                                   templates=all_downloaded_template)
         else:
-            return render_template('user.html', form=form, user=user, error="Invalid file type",
+            return render_template('user.html', form=form, user=logged_in_user, error="Invalid file type",
                                    templates=all_downloaded_template)
 
-    return render_template('user.html', form=form, user=user, templates=all_downloaded_template)
+    return render_template('user.html', form=form, user=logged_in_user, templates=all_downloaded_template)
 
 
-@app.route('/uploads/<filename>/<type_file>/<login>')
-def uploads(filename, type_file, login):
-    user = Users.query.filter_by(login=login).first()
-    name_folder = 'UPLOAD_ZIP'
-    print(type_file)
-    if type_file == 'template':
-        name_folder = 'UPLOAD_TEMPLATE'
+@app.route('/uploads/<filename>/<login>')
+def uploads(filename, login):
+    logged_in_user = Users.query.filter_by(login=login).first()
+    path_to_file = app.config['UPLOAD_ZIP'] + str(logged_in_user.id) + '/' + filename
 
-    return send_file(app.config[name_folder] + str(user.id) + '/' + filename, as_attachment=True, cache_timeout=-1)
+    @after_this_request
+    def remove_file(response):
+        os.remove(path_to_file)
+        return response
+
+    return send_file(path_to_file, as_attachment=True, cache_timeout=-1)
+
+
+@app.route('/uploads_temlate/<filename>/<login>')
+def uploads_template(filename, login):
+    logged_in_user = Users.query.filter_by(login=login).first()
+
+    return send_file(app.config['UPLOAD_TEMPLATE'] + '/' + str(logged_in_user.id) + '/' + filename, as_attachment=True,
+                     cache_timeout=-1)
 
 
 @app.route('/template/<login>')
 def template(login):
-    user = Users.query.filter_by(login=login).first()
-    all_downloaded_template = Template.query.filter_by(user_id=user.id).all()
+    logged_in_user = Users.query.filter_by(login=login).first()
+    all_downloaded_template = Template.query.filter_by(user_id=logged_in_user.id).all()
 
     return render_template('template.html', login=login, templates=all_downloaded_template)
-
-
