@@ -121,6 +121,8 @@ def template(login):
 
 @app.route('/delete_template/<filename>/<login>')
 def delete_template(filename, login):
+    logged_in_user = Users.query.filter_by(login=login).first()
     Template.query.filter_by(server_template=filename).delete()
     db.session.commit()
+    os.remove(app.config['UPLOAD_TEMPLATE'] + str(logged_in_user.id) + '/' + filename)
     return redirect(url_for('template', login=login))
