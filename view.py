@@ -69,7 +69,7 @@ def user(login):
     if request.method == 'POST':
         data = form.data.data
         template = form.template.data
-        loaded_template = request.form['exampleFormControlSelect1']
+        loaded_template = request.form['template_select']
 
         if template and loaded_template != 'Choose a template':
             using_loaded_template = False
@@ -117,3 +117,10 @@ def template(login):
     all_downloaded_template = Template.query.filter_by(user_id=logged_in_user.id).all()
 
     return render_template('template.html', login=login, templates=all_downloaded_template)
+
+
+@app.route('/delete_template/<filename>/<login>')
+def delete_template(filename, login):
+    Template.query.filter_by(server_template=filename).delete()
+    db.session.commit()
+    return redirect(url_for('template', login=login))

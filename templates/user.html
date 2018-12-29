@@ -12,7 +12,7 @@ Login
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{user.login}}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="{{url_for('user', login=user.login)}}">Profile</a>
+            <a class="dropdown-item" href="{{url_for('user', login=user.login)}}">Data processing</a>
             <a class="dropdown-item" href="{{url_for('template', login=user.login)}}">Templates</a>
             <a class="dropdown-item" href="#">Edit</a>
             <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
@@ -45,13 +45,14 @@ Login
                 </p>
                 <p>
                     {{ form.template.label }}<br>
-                {{ form.template() }}
+                    {{ form.template() }}
                 <div class="form-group">
-                    <label for="exampleFormControlSelect1">Template select</label>
-                    <select class="form-control" name="exampleFormControlSelect1">
+                    <label>Template select</label>
+                    <select class="form-control" name="template_select">
                         <option>Choose a template</option>
                         {% for template in templates %}
-                        <option value={{template.server_template}}> {{template.template}} - {{template.create_date}}</option>
+                        <option value={{template.server_template}}> {{template.template}} - {{template.create_date}}
+                        </option>
                         {% endfor %}
 
                     </select>
@@ -63,7 +64,7 @@ Login
                     <button onclick="myfunction()" class="btn btn-lg btn-primary btn-block " type="submit">Go</button>
                 </div>
                 <p style="color:red">{{error}}</p>
-                <a href="{{url_for('uploads',filename=message, login=current_user.login)}}" download>{{message}}</a>
+                <a onclick="this.style.display='none'; return true;" href="{{url_for('uploads',filename=message, login=current_user.login)}}" download>{{message}}</a>
             </form>
 
         </div>

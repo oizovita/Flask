@@ -47,7 +47,7 @@
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{login}}
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="{{url_for('user', login=login)}}">Profile</a>
+                        <a class="dropdown-item" href="{{url_for('user', login=login)}}">Data processing</a>
                         <a class="dropdown-item" href="{{url_for('template', login=login)}}">Templates</a>
                         <a class="dropdown-item" href="#">Edit</a>
                         <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
@@ -64,10 +64,13 @@
 <div class="container-fluid">
     <div class="col-md-auto">
         <ul class="list-group">
+
             {% for template in templates %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{template.template}} - {{template.create_date}}
-                <a href="{{url_for('uploads_template',filename=template.server_template, login=login)}}" class="badge badge-primary badge-pill">download</a>
+                <a href="{{url_for('uploads_template',filename=template.server_template, login=login)}}">{{template.template}} - {{template.create_date}}</a>
+
+
+                <a href="{{url_for('delete_template',filename=template.server_template, login=login)}}" class="badge badge-primary badge-pill">Delete</a>
             </li>
             {% endfor %}
         </ul>
