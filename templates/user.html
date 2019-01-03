@@ -12,8 +12,8 @@ Login
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{user.login}}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="{{url_for('user', login=user.login)}}">Data processing</a>
-            <a class="dropdown-item" href="{{url_for('template', login=user.login)}}">Templates</a>
+            <a class="dropdown-item" href="{{url_for('user')}}">Data processing</a>
+            <a class="dropdown-item" href="{{url_for('template')}}">Templates</a>
             <a class="dropdown-item" href="#">Edit</a>
             <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
         </div>
@@ -34,7 +34,7 @@ Login
 
         </div>
         <div class="col-md-auto">
-            <form class="form-signin text-center" action="{{url_for('user', login=current_user.login)}}" method="POST"
+            <form class="form-signin text-center" action="{{url_for('user')}}" method="POST"
                   novalidate enctype=multipart/form-data>
                 {{ form.hidden_tag() }}
                 <h1 class="h3 mb-3 font-weight-normal">Load file</h1>

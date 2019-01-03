@@ -20,7 +20,7 @@ def before_request():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('user', login=current_user.login))
+        return redirect(url_for('user'))
     form = LoginForm()
     if form.validate_on_submit():
         user = Users.query.filter_by(login=form.login.data).first()
@@ -29,7 +29,7 @@ def login():
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('user', login=current_user.login)
+            next_page = url_for('user')
         return redirect(next_page)
     return render_template('login.html', form=form)
 
@@ -43,7 +43,7 @@ def logout():
 @app.route('/registration', methods=['POST', 'GET'])
 def registration():
     if current_user.is_authenticated:
-        return redirect(url_for('user', login=current_user.login))
+        return redirect(url_for('user'))
     form = RegistrationForm()
     if form.validate_on_submit():
         user = Users(login=form.login.data, email=form.email.data)
@@ -54,10 +54,10 @@ def registration():
     return render_template('registration.html', form=form)
 
 
-@app.route('/user/<login>/', methods=['POST', 'GET'])
+@app.route('/user', methods=['POST', 'GET'])
 @login_required
-def user(login):
-    logged_in_user = Users.query.filter_by(login=login).first()
+def user():
+    logged_in_user = Users.query.filter_by(login=current_user.login).first()
     all_downloaded_template = Template.query.filter_by(user_id=logged_in_user.id).all()
     form = TemplateForm()
 
@@ -90,9 +90,9 @@ def user(login):
     return render_template('user.html', form=form, user=logged_in_user, templates=all_downloaded_template)
 
 
-@app.route('/uploads/<filename>/<login>')
-def uploads(filename, login):
-    logged_in_user = Users.query.filter_by(login=login).first()
+@app.route('/uploads/<filename>')
+def uploads(filename):
+    logged_in_user = Users.query.filter_by(login=current_user.login).first()
     path_to_file = app.config['UPLOAD_ZIP'] + str(logged_in_user.id) + '/' + filename
 
     @after_this_request
@@ -103,26 +103,26 @@ def uploads(filename, login):
     return send_file(path_to_file, as_attachment=True, cache_timeout=-1)
 
 
-@app.route('/uploads_temlate/<filename>/<login>')
-def uploads_template(filename, login):
-    logged_in_user = Users.query.filter_by(login=login).first()
+@app.route('/uploads_temlate/<filename>')
+def uploads_template(filename):
+    logged_in_user = Users.query.filter_by(login=current_user.login).first()
 
     return send_file(app.config['UPLOAD_TEMPLATE'] + '/' + str(logged_in_user.id) + '/' + filename, as_attachment=True,
                      cache_timeout=-1)
 
 
-@app.route('/template/<login>')
-def template(login):
-    logged_in_user = Users.query.filter_by(login=login).first()
+@app.route('/template')
+def template():
+    logged_in_user = Users.query.filter_by(login=current_user.login).first()
     all_downloaded_template = Template.query.filter_by(user_id=logged_in_user.id).all()
 
-    return render_template('template.html', login=login, templates=all_downloaded_template)
+    return render_template('template.html', login=current_user.login, templates=all_downloaded_template)
 
 
-@app.route('/delete_template/<filename>/<login>')
-def delete_template(filename, login):
-    logged_in_user = Users.query.filter_by(login=login).first()
+@app.route('/delete_template/<filename>')
+def delete_template(filename):
+    logged_in_user = Users.query.filter_by(login=current_user.login).first()
     Template.query.filter_by(server_template=filename).delete()
     db.session.commit()
     os.remove(app.config['UPLOAD_TEMPLATE'] + str(logged_in_user.id) + '/' + filename)
-    return redirect(url_for('template', login=login))
+    return redirect(url_for('template'))
