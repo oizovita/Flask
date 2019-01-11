@@ -1,16 +1,29 @@
 import time
 import shutil
 import zipfile
+import dropbox
 import datetime
 from dolly import *
 from app import app, db
 from models import Template
 from werkzeug.utils import secure_filename
 
+dbx = dropbox.Dropbox(app.config['DROPBOX_TOKEN'])
+
 # valid template files
 ALLOWED_EXTENSIONS_TEMPLATE = ['doc', 'docx', 'html']
 # valid data files
 ALLOWED_EXTENSIONS_DATA = 'xlsx'
+
+
+def delete_from_dropbox(template, user):
+    dbx.files_delete('/template/' + str(user.id) + '/' + template)
+
+
+def download_from_dropbox(template, user):
+    with open(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template, "wb") as f:
+        metadata, res = dbx.files_download(path='/template/' + str(user.id) + '/' + template)
+        f.write(res.content)
 
 
 # data file check
@@ -40,10 +53,13 @@ def data_and_template_handler(data, template, user, using_loaded_template):
 
             creating_files_by_template(user, data_file_name, template_file_name)
             create_zip(user, name_zip, 'UPLOAD_ZIP')
-
+            os.remove(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template_file_name)
             return True, name_zip
     else:
         if data_file_name:
+
+            download_from_dropbox(template, user)
+
             creating_files_by_template(user, data_file_name, template)
             create_zip(user, name_zip, 'UPLOAD_ZIP')
 
@@ -58,13 +74,14 @@ def check_file(file, type, user, dir):
         if file and allowed_file_data(file.filename):
             try:
                 filename = load_file(file, user, dir)
+
                 return filename
             except Exception:
                 return False
     elif type == 'template':
         if file and allowed_file_template(file.filename):
             try:
-                filename = load_file(file, user, dir)
+                filename = load_file(file, user, dir, template=True)
                 return filename
             except Exception:
                 return False
@@ -73,11 +90,18 @@ def check_file(file, type, user, dir):
 
 
 # uploads file to server
-def load_file(file, user, dir):
+def load_file(file, user, dir, template=False):
     create_folder(app.config[dir] + str(user.id))
 
     filename = 'file_' + str(int(time.time())) + '_' + secure_filename(file.filename)
     file.save(os.path.join(app.config[dir] + str(user.id), filename))
+    if template:
+
+        dbx.files_create_folder_batch(['/template/' + str(user.id)])
+
+        with open(app.config[dir] + str(user.id) + '/' + filename, 'rb') as f:
+            dbx.files_upload(f.read(), '/template/' + str(user.id) + '/' + filename)
+
     return filename
 
 

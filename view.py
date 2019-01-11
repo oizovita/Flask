@@ -76,6 +76,7 @@ def user():
 
         if not template and loaded_template != 'Choose a template':
             template = loaded_template
+
             using_loaded_template = True
 
         handler_result = data_and_template_handler(data, template, logged_in_user, using_loaded_template)
@@ -106,6 +107,7 @@ def uploads(filename):
 @app.route('/uploads_temlate/<filename>')
 def uploads_template(filename):
     logged_in_user = Users.query.filter_by(login=current_user.login).first()
+    download_from_dropbox(filename, logged_in_user)
 
     return send_file(app.config['UPLOAD_TEMPLATE'] + '/' + str(logged_in_user.id) + '/' + filename, as_attachment=True,
                      cache_timeout=-1)
@@ -124,5 +126,5 @@ def delete_template(filename):
     logged_in_user = Users.query.filter_by(login=current_user.login).first()
     Template.query.filter_by(server_template=filename).delete()
     db.session.commit()
-    os.remove(app.config['UPLOAD_TEMPLATE'] + str(logged_in_user.id) + '/' + filename)
+    delete_from_dropbox(filename, logged_in_user)
     return redirect(url_for('template'))
