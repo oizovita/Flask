@@ -21,6 +21,7 @@ def delete_from_dropbox(template, user):
 
 
 def download_from_dropbox(template, user):
+    create_folder(app.config['UPLOAD_TEMPLATE'] + str(user.id))
     with open(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template, "wb") as f:
         metadata, res = dbx.files_download(path='/template/' + str(user.id) + '/' + template)
         f.write(res.content)
