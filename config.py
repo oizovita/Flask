@@ -16,5 +16,5 @@ class Configuration(object):
     # folder for storing templates
     UPLOAD_TEMPLATE = BASEDIR + '/file/template/'
     UPLOAD_ZIP = BASEDIR + '/file/zip/'
-    DROPBOX_TOKEN = 'Token'
+    DROPBOX_TOKEN = 'QJxJixIPJncAAAAAAAAvbr_Q7CosLfqdWLqo8lAzzIVfcZAghTSoI0ydxwtHDvIi'
 
