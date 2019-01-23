@@ -3,7 +3,6 @@ import subprocess
 import pdfkit
 import argparse
 import json
-import pdfrw
 import subprocess
 from xlrd import open_workbook
 from docxtpl import DocxTemplate
