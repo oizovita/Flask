@@ -2,7 +2,7 @@ from scripts import *
 from app import app, db
 from models import Users, Template
 from werkzeug.urls import url_parse
-from forms import LoginForm, RegistrationForm, TemplateForm
+from forms import LoginForm, RegistrationForm, TemplateForm, PDFForm
 from flask_login import current_user, login_user, login_required, logout_user
 from flask import render_template, g, flash, request, redirect, url_for, send_file, after_this_request
 
@@ -89,6 +89,42 @@ def user():
                                    templates=all_downloaded_template)
 
     return render_template('user.html', form=form, user=logged_in_user, templates=all_downloaded_template)
+
+
+@app.route('/pdf', methods=['POST', 'GET'])
+def pdf():
+    logged_in_user = Users.query.filter_by(login=current_user.login).first()
+    all_downloaded_template = Template.query.filter_by(user_id=logged_in_user.id).all()
+    form = PDFForm()
+
+    if logged_in_user == None:
+        flash('User ' + login + ' not found.')
+        return redirect(url_for('index'))
+
+    using_loaded_template = False
+    if request.method == 'POST':
+        data = form.data.data
+        template = form.template.data
+        template_json = form.template_json.data
+        loaded_template = request.form['template_select']
+
+        if template and loaded_template != 'Choose a template':
+            using_loaded_template = False
+
+        if not template and loaded_template != 'Choose a template':
+            template = loaded_template
+            using_loaded_template = True
+
+        handler_result = data_and_template_handler(data, template, logged_in_user, using_loaded_template, template_json)
+
+        if handler_result[0]:
+            return render_template('pdf.html', form=form, user=logged_in_user, message=handler_result[1],
+                                   templates=all_downloaded_template)
+        else:
+            return render_template('pdf.html', form=form, user=logged_in_user, error="Invalid file type",
+                                   templates=all_downloaded_template)
+
+    return render_template('pdf.html', form=form, user=logged_in_user, templates=all_downloaded_template)
 
 
 @app.route('/uploads/<filename>')

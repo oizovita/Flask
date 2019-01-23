@@ -35,7 +35,7 @@ Login
 
         </div>
         <div class="col-md-auto">
-            <form class="form-signin text-center" action="{{url_for('user')}}" method="POST"
+            <form class="form-signin text-center" action="{{url_for('pdf')}}" method="POST"
                   novalidate enctype=multipart/form-data>
                 {{ form.hidden_tag() }}
                 <h1 class="h3 mb-3 font-weight-normal">Load file</h1>
@@ -47,6 +47,11 @@ Login
                 <p>
                     {{ form.template.label }}<br>
                     {{ form.template() }}
+                </p>
+                <p>
+                    {{ form.template_json.label }}<br>
+                    {{ form.template_json() }}
+                </p>
                 <div class="form-group">
                     <label>Template select</label>
                     <select class="form-control" name="template_select">
@@ -59,7 +64,7 @@ Login
                     </select>
                 </div>
 
-                </p>
+
 
                 <div>
                     <button onclick="myfunction()" class="btn btn-lg btn-primary btn-block " type="submit">Go</button>

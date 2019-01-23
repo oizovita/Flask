@@ -12,8 +12,9 @@ class Configuration(object):
     BASEDIR = os.path.abspath(os.path.dirname(__file__))
     # folder for storing data
     UPLOAD_DATA = BASEDIR + '/file/data/'
+    UPLOAD_JSON = BASEDIR + '/file/json/'
     # folder for storing templates
     UPLOAD_TEMPLATE = BASEDIR + '/file/template/'
     UPLOAD_ZIP = BASEDIR + '/file/zip/'
-    DROPBOX_TOKEN = 'QJxJixIPJncAAAAAAAAvbr_Q7CosLfqdWLqo8lAzzIVfcZAghTSoI0ydxwtHDvIi'
+    DROPBOX_TOKEN = 'Token'
 

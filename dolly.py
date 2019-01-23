@@ -2,14 +2,23 @@ import os
 import subprocess
 import pdfkit
 import argparse
+import json
+import pdfrw
 import subprocess
 from xlrd import open_workbook
 from docxtpl import DocxTemplate
 from jinja2 import FileSystemLoader, Environment
+from PyPDF2 import PdfFileWriter, PdfFileReader
+from PyPDF2.generic import BooleanObject, NameObject, IndirectObject
 
 FILE_HTML = 'html'
 FILE_DOCX = 'docx'
 TMP_HTML_TEMPLATE = 'template.html'
+FILE_PDF = 'pdf'
+ANNOT_KEY = '/Annots'
+ANNOT_FIELD_KEY = '/T'
+SUBTYPE_KEY = '/Subtype'
+WIDGET_SUBTYPE_KEY = '/Widget'
 
 
 # Checks if the folder already exists
@@ -52,19 +61,22 @@ def parser_excel_file(sheet, number):
 
 # Substitute the value from the dictionary into
 # the tamplate and create as many records as the rows
-def substitution_into_a_template(sheet,path_to_the_template, output_folder):
+def substitution_into_a_template(sheet, path_to_the_template, output_folder):
     if path_to_the_template[-4:] == FILE_HTML:
         print('Invalid file format')
         exit()
+    if path_to_the_template[-3:] == FILE_PDF:
+        print('Inavalif file format')
+        exit()
     for i in range(1, len(sheet.col(0))):
         doc = DocxTemplate(path_to_the_template)
-        doc.render(parser_excel_file(sheet,i))
+        doc.render(parser_excel_file(sheet, i))
         doc.save(output_folder + '/Invoice{0}.docx'.format(i))
 
 
 # Looks for the path to the template. Enters the necessary data into a template
 # and saves it in a temporary  html file, then converts it into a PDF
-def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
+def create_pdf_from_html_template(sheet, path_to_the_template, output_folder):
     if path_to_the_template[-4:] == FILE_DOCX:
         print('Invalid file format')
         exit()
@@ -81,13 +93,76 @@ def create_pdf_from_html_template(sheet,path_to_the_template, output_folder):
     template = Environment(loader=FileSystemLoader(searchpath=path_to_the_template)).get_template(template_html_file)
 
     for i in range(1, len(sheet.col(0))):
-        outputText = template.render(parser_excel_file(sheet,i))
+        outputText = template.render(parser_excel_file(sheet, i))
         html_file = open(TMP_HTML_TEMPLATE, 'w')
         html_file.write(outputText)
         html_file.close()
         pdfkit.from_file('template.html', output_folder + '/Invoice{0}.pdf'.format(i), configuration=pdfkit_config)
 
     os.remove(TMP_HTML_TEMPLATE)
+
+
+def set_need_appearances_writer(writer):
+    # See 12.7.2 and 7.7.2 for more information:
+    # http://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf
+    try:
+        catalog = writer._root_object
+        # get the AcroForm tree and add "/NeedAppearances attribute
+        if "/AcroForm" not in catalog:
+            writer._root_object.update({
+                NameObject("/AcroForm"): IndirectObject(len(writer._objects), 0, writer)})
+
+        need_appearances = NameObject("/NeedAppearances")
+        writer._root_object["/AcroForm"][need_appearances] = BooleanObject(True)
+        return writer
+
+    except Exception as e:
+        print('set_need_appearances_writer() catch : ', repr(e))
+        return writer
+
+
+# Reads a pdf-file, searches in it for the same keys from the file
+# and dictionary and replaces the values in the file. Saves a new file
+def record_in_pdf_template(template, output_folder, data_dict):
+    if template[-4:] == FILE_DOCX:
+        print('Inavalif file format')
+        exit()
+
+    inputStream = open(template, "rb")
+    pdf_reader = PdfFileReader(inputStream, strict=False)
+
+    if "/AcroForm" in pdf_reader.trailer["/Root"]:
+        pdf_reader.trailer["/Root"]["/AcroForm"].update(
+            {NameObject("/NeedAppearances"): BooleanObject(True)})
+
+    pdf_writer = PdfFileWriter()
+    set_need_appearances_writer(pdf_writer)
+    if "/AcroForm" in pdf_writer._root_object:
+        pdf_writer._root_object["/AcroForm"].update(
+            {NameObject("/NeedAppearances"): BooleanObject(True)})
+
+    pdf_writer.addPage(pdf_reader.getPage(0))
+    pdf_writer.updatePageFormFieldValues(pdf_writer.getPage(0), data_dict)
+
+    outputStream = open(output_folder, "wb")
+    pdf_writer.write(outputStream)
+
+    inputStream.close()
+    outputStream.close()
+
+
+# Reads the json file by replacing the values in the dictionary
+# and passes it to record_in_pdf_template
+def create_pdf_templates(sheet, json_file, template, output_folder):
+    data_json = json.load(open(json_file))
+    for i in range(1, len(sheet.col(0))):
+        data_dict = {}
+        for data in data_json:
+            for exel_row in parser_excel_file(sheet, i):
+                if data_json[data] == exel_row:
+                    data_dict[data] = parser_excel_file(sheet, i)[exel_row]
+
+        record_in_pdf_template(template, output_folder + '/Invoice{0}.pdf'.format(i), data_dict)
 
 
 if __name__ == '__main__':
@@ -110,7 +185,7 @@ if __name__ == '__main__':
         exit()
     elif args.type_file == 'd':
         substitution_into_a_template(sheet, args.template, args.output_folder)
-    elif args.type_file == 'p':
+    elif args.type_file == 'h':
         create_pdf_from_html_template(args.template, args.output_folder)
     else:
         print('Incorrect key for document type entered')

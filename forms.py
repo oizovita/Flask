@@ -33,3 +33,8 @@ class TemplateForm(FlaskForm):
     data = FileField('Data', validators=[FileRequired()])
     template = FileField('Template', validators=[FileRequired()])
 
+
+class PDFForm(FlaskForm):
+    data = FileField('Data', validators=[FileRequired()])
+    template = FileField('Template', validators=[FileRequired()])
+    template_json = FileField('JSON', validators=[FileRequired()])

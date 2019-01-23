@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 dbx = dropbox.Dropbox(app.config['DROPBOX_TOKEN'])
 
 # valid template files
-ALLOWED_EXTENSIONS_TEMPLATE = ['doc', 'docx', 'html']
+ALLOWED_EXTENSIONS_TEMPLATE = ['doc', 'docx', 'html', 'pdf', 'json']
 # valid data files
 ALLOWED_EXTENSIONS_DATA = 'xlsx'
 
@@ -41,9 +41,13 @@ def allowed_file_template(filename):
 
 # checks patterns and data and if everything puts them well into the database.
 # runs file and archive creation.
-def data_and_template_handler(data, template, user, using_loaded_template):
+def data_and_template_handler(data, template, user, using_loaded_template, template_json=None):
     name_zip = str(time.ctime()).replace(" ", "_") + '.zip'
     data_file_name = check_file(data, 'data', user, 'UPLOAD_DATA', )
+    template_file_json = None
+    if template_json:
+        template_file_json = check_file(template_json, 'json', user, 'UPLOAD_JSON')
+
     if not using_loaded_template:
         template_file_name = check_file(template, 'template', user, 'UPLOAD_TEMPLATE')
         if data_file_name and template_file_name:
@@ -52,16 +56,15 @@ def data_and_template_handler(data, template, user, using_loaded_template):
             db.session.add(tmp)
             db.session.commit()
 
-            creating_files_by_template(user, data_file_name, template_file_name)
+            creating_files_by_template(user, data_file_name, template_file_name, template_file_json)
             create_zip(user, name_zip, 'UPLOAD_ZIP')
             os.remove(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template_file_name)
             return True, name_zip
     else:
         if data_file_name:
-
             download_from_dropbox(template, user)
 
-            creating_files_by_template(user, data_file_name, template)
+            creating_files_by_template(user, data_file_name, template, template_file_json)
             create_zip(user, name_zip, 'UPLOAD_ZIP')
 
             return True, name_zip
@@ -86,6 +89,14 @@ def check_file(file, type, user, dir):
                 return filename
             except Exception:
                 return False
+    elif type == 'json':
+
+        if file and allowed_file_template(file.filename):
+            try:
+                filename = load_file(file, user, dir)
+                return filename
+            except Exception:
+                return False
     else:
         return False
 
@@ -97,7 +108,6 @@ def load_file(file, user, dir, template=False):
     filename = 'file_' + str(int(time.time())) + '_' + secure_filename(file.filename)
     file.save(os.path.join(app.config[dir] + str(user.id), filename))
     if template:
-
         dbx.files_create_folder_batch(['/template/' + str(user.id)])
 
         with open(app.config[dir] + str(user.id) + '/' + filename, 'rb') as f:
@@ -107,7 +117,7 @@ def load_file(file, user, dir, template=False):
 
 
 # creates files based on the specified template in pdf or doc format
-def creating_files_by_template(user, data_file_name, template_file_name):
+def creating_files_by_template(user, data_file_name, template_file_name, template_file_json=None):
     book = open_workbook(
         app.config['UPLOAD_DATA'] + str(user.id) + '/' + str(data_file_name),
         on_demand=True)
@@ -122,8 +132,13 @@ def creating_files_by_template(user, data_file_name, template_file_name):
         substitution_into_a_template(sheet, app.config['UPLOAD_TEMPLATE'] + str(user.id) +
                                      '/' + str(template_file_name),
                                      app.config['BASEDIR'] + '/tmp_' + str(user.id))
-
+    elif template_file_name[-3:] == 'pdf' and template_file_json:
+        create_pdf_templates(sheet, app.config['UPLOAD_JSON'] + str(user.id) +
+                             '/' + str(template_file_json), app.config['UPLOAD_TEMPLATE'] + str(user.id) +
+                             '/' + str(template_file_name), app.config['BASEDIR'] + '/tmp_' + str(user.id))
+        shutil.rmtree(app.config['UPLOAD_JSON'])
     shutil.rmtree(app.config['UPLOAD_DATA'])
+
 
 
 # creates archive for download
