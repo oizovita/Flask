@@ -5,3 +5,5 @@ file/
 .vscode/
 geckodriver.log
 test.py
+scripts.pyc
+view.pyc
