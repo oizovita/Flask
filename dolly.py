@@ -198,4 +198,3 @@ if __name__ == '__main__':
         create_pdf_from_html_template(sheet, args.template, args.output_folder)
     else:
         print('Incorrect key for document type entered')
-

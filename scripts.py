@@ -1,30 +1,20 @@
 import time
 import shutil
 import zipfile
-import dropbox
 import datetime
 from dolly import *
-from app import app, db
+from app import app, db, mail
+from flask_mail import Message
 from models import Template
 from werkzeug.utils import secure_filename
+from flask import render_template
+from threading import Thread
 
-dbx = dropbox.Dropbox(app.config['DROPBOX_TOKEN'])
 
 # valid template files
 ALLOWED_EXTENSIONS_TEMPLATE = ['doc', 'docx', 'html', 'pdf', 'json']
 # valid data files
 ALLOWED_EXTENSIONS_DATA = 'xlsx'
-
-
-def delete_from_dropbox(template, user):
-    dbx.files_delete('/template/' + str(user.id) + '/' + template)
-
-
-def download_from_dropbox(template, user):
-    create_folder(app.config['UPLOAD_TEMPLATE'] + str(user.id))
-    with open(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template, "wb") as f:
-        metadata, res = dbx.files_download(path='/template/' + str(user.id) + '/' + template)
-        f.write(res.content)
 
 
 # data file check
@@ -58,12 +48,10 @@ def data_and_template_handler(data, template, user, using_loaded_template, templ
 
             creating_files_by_template(user, data_file_name, template_file_name, template_file_json)
             create_zip(user, name_zip, 'UPLOAD_ZIP')
-            os.remove(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template_file_name)
+            # os.remove(app.config['UPLOAD_TEMPLATE'] + str(user.id) + '/' + template_file_name)
             return True, name_zip
     else:
         if data_file_name:
-            download_from_dropbox(template, user)
-
             creating_files_by_template(user, data_file_name, template, template_file_json)
             create_zip(user, name_zip, 'UPLOAD_ZIP')
 
@@ -85,7 +73,7 @@ def check_file(file, type, user, dir):
     elif type == 'template':
         if file and allowed_file_template(file.filename):
             try:
-                filename = load_file(file, user, dir, template=True)
+                filename = load_file(file, user, dir)
                 return filename
             except Exception:
                 return False
@@ -102,16 +90,11 @@ def check_file(file, type, user, dir):
 
 
 # uploads file to server
-def load_file(file, user, dir, template=False):
+def load_file(file, user, dir):
     create_folder(app.config[dir] + str(user.id))
 
     filename = 'file_' + str(int(time.time())) + '_' + secure_filename(file.filename)
     file.save(os.path.join(app.config[dir] + str(user.id), filename))
-    if template:
-        dbx.files_create_folder_batch(['/template/' + str(user.id)])
-
-        with open(app.config[dir] + str(user.id) + '/' + filename, 'rb') as f:
-            dbx.files_upload(f.read(), '/template/' + str(user.id) + '/' + filename)
 
     return filename
 
@@ -140,7 +123,6 @@ def creating_files_by_template(user, data_file_name, template_file_name, templat
     shutil.rmtree(app.config['UPLOAD_DATA'])
 
 
-
 # creates archive for download
 def create_zip(user, name_zip, dir):
     create_folder(app.config[dir] + str(user.id))
@@ -156,3 +138,26 @@ def create_zip(user, name_zip, dir):
 
     shutil.rmtree('tmp_' + str(user.id))
     shutil.move(name_zip, app.config[dir] + str(user.id))
+
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    with app.app_context():
+        msg = Message(subject, sender=sender, recipients=recipients)
+        msg.body = text_body
+        msg.html = html_body
+        Thread(target=send_async_email, args=(app, msg)).start()
+    return app
+
+
+def send_password_reset_email(user):
+    token = user.get_reset_password_token()
+    send_email('Reset Your Password',
+               sender=app.config['MAIL_USERNAME'],
+               recipients=[user.email],
+               text_body=render_template('reset_password_mail.txt', user=user, token=token),
+               html_body=render_template('reset_password_mail.html', user=user, token=token))

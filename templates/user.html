@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {%  block title %}
-Login
+User
 {% endblock %}
 {%  block user %}
 
@@ -15,6 +15,9 @@ Login
             <a class="dropdown-item" href="{{url_for('user')}}">Data processing</a>
             <a class="dropdown-item" href="{{url_for('pdf')}}">PDF</a>
             <a class="dropdown-item" href="{{url_for('template')}}">Templates</a>
+            {% if user.root %}
+                <a class="dropdown-item" href="{{url_for('registration')}}">Add new user</a>
+            {% endif %}
             <a class="dropdown-item" href="#">Edit</a>
             <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
         </div>
@@ -22,7 +25,7 @@ Login
 
 </form>
 
-</nav>
+<!--</nav>-->
 
 {%endblock %}
 

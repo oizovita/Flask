@@ -9,6 +9,7 @@ class Users(UserMixin, db.Model):
     login = db.Column(db.String(20), unique=True)
     email = db.Column(db.String(40), unique=True)
     password_hash = db.Column(db.String(128))
+    root = db.Column(db.Boolean)
 
     def __init__(self, *args, **kwargs):
         super(Users, self).__init__(*args, **kwargs)

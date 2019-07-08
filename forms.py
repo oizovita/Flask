@@ -38,3 +38,12 @@ class PDFForm(FlaskForm):
     data = FileField('Data', validators=[FileRequired()])
     template = FileField('Template', validators=[FileRequired()])
     template_json = FileField('JSON', validators=[FileRequired()])
+
+
+class ResetPasswordRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])

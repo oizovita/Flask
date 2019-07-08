@@ -4,11 +4,6 @@
 Login
 {% endblock %}
 {%  block user %}
-<ul class="navbar-nav mr-auto">
-    <li class="nav-item">
-        <a href="{{url_for('registration')}}" class="nav-link">Sing up</a>
-    </li>
-</ul>
 {%endblock %}
 
 {%  block content %}
@@ -34,7 +29,10 @@ Login
                 <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
                 <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
                 <span style="color: red;">{{ error }}</span>
-
+                <p>
+                    Forgot Your Password?
+                    <a href="{{url_for('reset_password_request') }}">Click to Reset It</a>
+                </p>
             </form>
         </div>
         <div class="col">

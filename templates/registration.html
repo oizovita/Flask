@@ -1,15 +1,27 @@
 {% extends 'base.html' %}
 
 {%  block title %}
-Login
+Registration
 {% endblock %}
 {%  block user %}
-<ul class="navbar-nav mr-auto">
-    <li class="nav-item">
-        <a href="{{url_for('login')}}" class="nav-link">Sing in</a>
-    </li>
+<form class="form-inline my-lg-0">
+    <div class=" btn-group dropleft">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{user.login}}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="{{url_for('user')}}">Data processing</a>
+            <a class="dropdown-item" href="{{url_for('pdf')}}">PDF</a>
+            <a class="dropdown-item" href="{{url_for('template')}}">Templates</a>
+            {% if user.root %}
+                <a class="dropdown-item" href="{{url_for('registration')}}">Add new user</a>
+            {% endif %}
+            <a class="dropdown-item" href="#">Edit</a>
+            <a class="dropdown-item" href="{{url_for('logout')}}">Exit</a>
+        </div>
+    </div>
 
-</ul>
+</form>
 {%endblock %}
 
 {%  block content %}

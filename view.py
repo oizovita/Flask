@@ -2,7 +2,7 @@ from scripts import *
 from app import app, db
 from models import Users, Template
 from werkzeug.urls import url_parse
-from forms import LoginForm, RegistrationForm, TemplateForm, PDFForm
+from forms import LoginForm, RegistrationForm, TemplateForm, PDFForm, ResetPasswordRequestForm, ResetPasswordForm
 from flask_login import current_user, login_user, login_required, logout_user
 from flask import render_template, g, flash, request, redirect, url_for, send_file, after_this_request
 
@@ -42,16 +42,17 @@ def logout():
 
 @app.route('/registration', methods=['POST', 'GET'])
 def registration():
-    if current_user.is_authenticated:
+    print(current_user.root, current_user.login)
+    if current_user.is_authenticated and not current_user.root:
         return redirect(url_for('user'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = Users(login=form.login.data, email=form.email.data)
+        user = Users(login=form.login.data, email=form.email.data, root=False)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
         return redirect(url_for('login'))
-    return render_template('registration.html', form=form)
+    return render_template('registration.html', form=form, user=current_user)
 
 
 @app.route('/user', methods=['POST', 'GET'])
@@ -143,8 +144,6 @@ def uploads(filename):
 @app.route('/uploads_temlate/<filename>')
 def uploads_template(filename):
     logged_in_user = Users.query.filter_by(login=current_user.login).first()
-    download_from_dropbox(filename, logged_in_user)
-
     return send_file(app.config['UPLOAD_TEMPLATE'] + '/' + str(logged_in_user.id) + '/' + filename, as_attachment=True,
                      cache_timeout=-1)
 
@@ -162,5 +161,36 @@ def delete_template(filename):
     logged_in_user = Users.query.filter_by(login=current_user.login).first()
     Template.query.filter_by(server_template=filename).delete()
     db.session.commit()
-    delete_from_dropbox(filename, logged_in_user)
+    os.remove(app.config['UPLOAD_TEMPLATE'] + str(logged_in_user.id) + '/' + filename)
     return redirect(url_for('template'))
+
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = Users.query.filter_by(email=form.email.data).first()
+        if user:
+            send_password_reset_email(user)
+        flash('Check your email for the instructions to reset your password')
+        return redirect(url_for('login'))
+    return render_template('reset_password_request.html',
+                          title='Reset Password', form=form)
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    user = Users.verify_reset_password_token(token)
+    if not user:
+        return redirect(url_for('index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been reset.')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form, token=token)
