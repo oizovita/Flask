@@ -17,11 +17,10 @@ class Configuration(object):
     UPLOAD_TEMPLATE = BASEDIR + '/file/template/'
     UPLOAD_ZIP = BASEDIR + '/file/zip/'
 
-    MAIL_SERVER = "smtp.gmail.com"
-    MAIL_PORT = 587
-    MAIL_USE_TLS =True
-    MAIL_USERNAME = "oles1103@gmail.com"
-    MAIL_PASSWORD = "bmrxibwydbaybxet"
-
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT'))
+    MAIL_USE_TLS = bool(os.environ.get('MAIL_USE_TLS'))
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 
 
